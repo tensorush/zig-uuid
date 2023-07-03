@@ -56,6 +56,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to GitHub Pages ${{ url }}
+      - name: Deploy to GitHub Pages ${{ environment.url }}
         id: deployment
         uses: actions/deploy-pages@v2
