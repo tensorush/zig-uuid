@@ -1,4 +1,4 @@
-name: CD
+name: Continuos Delivery
 
 on:
   push:
