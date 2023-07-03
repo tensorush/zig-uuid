@@ -33,20 +33,16 @@ jobs:
         with:
           version: master
 
-      - name: Build library
+      - name: Emit docs
         run: |
           zig env
           zig build lib
+          rm -rf ./docs/src/std/
 
-      - name: Archive artifact
-        run: |
-          tar -czvf artifact.tar.gz -C docs --exclude=src/std .
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
+      - name: Upload artifact for GitHub Pages
+        uses: actions/upload-pages-artifact@v1
         with:
-          name: github-pages
-          path: ./artifact.tar.gz
+          path: ./docs/
 
   deploy:
     needs: build
@@ -58,6 +54,6 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Deploy artifact to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
