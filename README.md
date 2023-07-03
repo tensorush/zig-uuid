@@ -50,7 +50,7 @@
 
 [ci-shield]: https://img.shields.io/github/actions/workflow/status/tensorush/zig-uuid/ci.yaml?branch=main&style=for-the-badge&logo=github&label=CI&labelColor=black
 [ci-url]: https://github.com/tensorush/zig-uuid/blob/main/.github/workflows/ci.yaml
-[cd-shield]: https://img.shields.io/github/actions/workflow/status/tensorush/zig-uuid/cd.yaml?branch=main&style=for-the-badge&logo=github&label=CI&labelColor=black
+[cd-shield]: https://img.shields.io/github/actions/workflow/status/tensorush/zig-uuid/cd.yaml?branch=main&style=for-the-badge&logo=github&label=CD&labelColor=black
 [cd-url]: https://github.com/tensorush/zig-uuid/blob/main/.github/workflows/cd.yaml
 [docs-shield]: https://img.shields.io/badge/click-F6A516?style=for-the-badge&logo=zig&logoColor=F6A516&label=docs&labelColor=black
 [docs-url]: https://tensorush.github.io/zig-uuid
