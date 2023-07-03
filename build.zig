@@ -30,7 +30,7 @@ pub fn build(b: *std.Build) void {
         benchs_run.addArgs(args);
     }
 
-    const benchs_step = b.step("bench", "Run benchs");
+    const benchs_step = b.step("bench", "Run benchmarks");
     benchs_step.dependOn(&benchs_run.step);
     b.default_step.dependOn(benchs_step);
 

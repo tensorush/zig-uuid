@@ -12,6 +12,8 @@ const HELP =
     \\
 ;
 
+const MainError = std.mem.Allocator.Error || std.time.Timer.Error || std.process.ArgIterator.InitError || std.fmt.ParseIntError || std.os.WriteError;
+
 const V = union(enum) {
     v1: Uuid.V1,
     v2: Uuid.V2,
@@ -34,7 +36,7 @@ const V = union(enum) {
     }
 };
 
-pub fn main() anyerror!void {
+pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
 
     var buf: [1024]u8 = undefined;
