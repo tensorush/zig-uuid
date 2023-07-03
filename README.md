@@ -1,11 +1,12 @@
 ## :lizard: :id: **zig uuid**
 
 [![CI][ci-shield]][ci-url]
+[![CD][cd-shield]][cd-url]
 [![Docs][docs-shield]][docs-url]
 [![License][license-shield]][license-url]
 [![Resources][resources-shield]][resources-url]
 
-### Zig implementation of [UUID versions from 1 to 7](https://www.ietf.org/archive/id/draft-peabody-dispatch-new-uuid-format-04.html).
+### Zig implementation of all [Universally Unique IDentifier (UUID) versions](https://www.ietf.org/archive/id/draft-peabody-dispatch-new-uuid-format-04.html).
 
 #### :rocket: Usage
 
@@ -28,7 +29,7 @@
     }
     ```
 
-    If unsure what to fill out for `<package_hash>`, set it to `12200000000000000000000000000000000000000000000000000000000000000000` and Zig will tell you the correct value in an error message.
+    If unsure what to put for `<package_hash>`, set it to any value and Zig will provide the correct one in an error message.
 
     </details>
 
@@ -49,6 +50,8 @@
 
 [ci-shield]: https://img.shields.io/github/actions/workflow/status/tensorush/zig-uuid/ci.yaml?branch=main&style=for-the-badge&logo=github&label=CI&labelColor=black
 [ci-url]: https://github.com/tensorush/zig-uuid/blob/main/.github/workflows/ci.yaml
+[cd-shield]: https://img.shields.io/github/actions/workflow/status/tensorush/zig-uuid/cd.yaml?branch=main&style=for-the-badge&logo=github&label=CI&labelColor=black
+[cd-url]: https://github.com/tensorush/zig-uuid/blob/main/.github/workflows/cd.yaml
 [docs-shield]: https://img.shields.io/badge/click-F6A516?style=for-the-badge&logo=zig&logoColor=F6A516&label=docs&labelColor=black
 [docs-url]: https://tensorush.github.io/zig-uuid
 [license-shield]: https://img.shields.io/github/license/tensorush/zig-uuid.svg?style=for-the-badge&labelColor=black

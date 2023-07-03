@@ -7,104 +7,68 @@ pub const NIL = fromInt(0);
 
 bytes: [16]u8,
 
-/// Creates a new UUID from a 16-byte slice.
-pub fn fromSlice(bytes: []const u8) Uuid {
-    var uuid: Uuid = undefined;
-    @memcpy(uuid.bytes[0..], bytes);
-    return uuid;
-}
-
-/// Creates a new UUID from a u128-bit integer.
+/// Creates a UUID from a u128-bit integer.
 pub fn fromInt(int: u128) Uuid {
     var uuid: Uuid = undefined;
     std.mem.writeIntBig(u128, uuid.bytes[0..], int);
     return uuid;
 }
 
-/// Formats the UUID according to RFC-4122.
-pub fn format(self: Uuid, comptime _: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
-    var buf: [36]u8 = undefined;
-    self.formatBuf(buf[0..]);
-    try writer.writeAll(buf[0..]);
+test "fromInt" {
+    try std.testing.expectEqual([1]u8{0x0} ** 16, NIL.bytes);
 }
 
-/// Formats the UUID to the buffer according to RFC-4122.
-pub fn formatBuf(self: Uuid, buf: []u8) void {
-    std.debug.assert(buf.len >= 36);
-
-    formatHex(buf[0..8], self.bytes[0..4]);
-    buf[8] = '-';
-    formatHex(buf[9..13], self.bytes[4..6]);
-    buf[13] = '-';
-    formatHex(buf[14..18], self.bytes[6..8]);
-    buf[18] = '-';
-    formatHex(buf[19..23], self.bytes[8..10]);
-    buf[23] = '-';
-    formatHex(buf[24..], self.bytes[10..]);
+/// Creates a UUID from a 16-byte slice.
+pub fn fromBytes(bytes: []const u8) Uuid {
+    var uuid: Uuid = undefined;
+    @memcpy(uuid.bytes[0..], bytes);
+    return uuid;
 }
 
-fn formatHex(dst: []u8, src: []const u8) void {
-    std.debug.assert(dst.len >= 2 * src.len);
-
-    const alphabet = "0123456789abcdef";
-    var d: usize = 0;
-    var s: usize = 0;
-    while (d < dst.len and s < src.len) {
-        const byte = src[s];
-        dst[d] = alphabet[byte >> 4];
-        dst[d + 1] = alphabet[byte & 0xF];
-        d += 2;
-        s += 1;
-    }
+test "fromBytes" {
+    try std.testing.expectEqual([1]u8{0x0} ** 16, fromBytes(&[1]u8{0x0} ** 16).bytes);
 }
 
-test "format" {
-    var buf: [36]u8 = undefined;
-    _ = try std.fmt.bufPrint(buf[0..], "{}", .{NIL});
-    try std.testing.expectEqualStrings("00000000-0000-0000-0000-000000000000", buf[0..]);
-    _ = try std.fmt.bufPrint(buf[0..], "{}", .{fromInt(0x0123456789ABCDEF0123456789ABCDEF)});
-    try std.testing.expectEqualStrings("01234567-89ab-cdef-0123-456789abcdef", buf[0..]);
-}
-
-fn parseHex(dst: []u8, src: []const u8) error{InvalidCharacter}!void {
-    std.debug.assert(src.len & 1 != 1 and dst.len >= src.len / 2);
-
-    var d: usize = 0;
-    var s: usize = 0;
-    while (d < dst.len and s < src.len) {
-        dst[d] = switch (src[s]) {
-            '0'...'9' => |c| c - '0',
-            'A'...'F' => |c| c - 'A' + 10,
-            'a'...'f' => |c| c - 'a' + 10,
-            else => return error.InvalidCharacter,
-        } << 4 | switch (src[s + 1]) {
-            '0'...'9' => |c| c - '0',
-            'A'...'F' => |c| c - 'A' + 10,
-            'a'...'f' => |c| c - 'a' + 10,
-            else => return error.InvalidCharacter,
-        };
-        d += 1;
-        s += 2;
-    }
-}
-
-/// Parses a RFC-4122-format string, tolerant of separators.
-pub fn parse(str: []const u8) error{InvalidCharacter}!Uuid {
-    std.debug.assert(str.len >= 36);
+/// Creates a UUID from an RFC-4122-formatted string.
+pub fn fromString(str: []const u8) error{InvalidCharacter}!Uuid {
+    std.debug.assert(str.len == 36 and str[8] == '-' and str[13] == '-' and str[18] == '-' and str[23] == '-');
 
     var uuid: Uuid = undefined;
-    try parseHex(uuid.bytes[0..4], str[0..8]);
-    try parseHex(uuid.bytes[4..6], str[9..13]);
-    try parseHex(uuid.bytes[6..8], str[14..18]);
-    try parseHex(uuid.bytes[8..10], str[19..23]);
-    try parseHex(uuid.bytes[10..], str[24..]);
+    var i: usize = 0;
+    for (uuid.bytes[0..]) |*byte| {
+        if (str[i] == '-') {
+            i += 1;
+        }
+        const hi = try std.fmt.charToDigit(str[i], 16);
+        const lo = try std.fmt.charToDigit(str[i + 1], 16);
+        byte.* = hi << 4 | lo;
+        i += 2;
+    }
 
     return uuid;
 }
 
-test "parse" {
-    const uuid = try parse("01234567-89ab-cdef-0123-456789abcdef");
-    try std.testing.expectEqual(fromInt(0x0123456789ABCDEF0123456789ABCDEF).bytes, uuid.bytes);
+test "fromString" {
+    const uuid = try fromString("01234567-89ab-cdef-0123-456789abcdef");
+    try std.testing.expectEqual(fromInt(0x0123456789ABCDEF0123456789ABCDEF), uuid);
+}
+
+/// Formats the UUID according to RFC-4122.
+pub fn format(self: Uuid, comptime _: []const u8, options: std.fmt.FormatOptions, writer: anytype) (@TypeOf(writer).Error)!void {
+    var buf: [36]u8 = undefined;
+    _ = std.fmt.bufPrint(buf[0..], "{}-{}-{}-{}-{}", .{
+        std.fmt.fmtSliceHexLower(self.bytes[0..4]),
+        std.fmt.fmtSliceHexLower(self.bytes[4..6]),
+        std.fmt.fmtSliceHexLower(self.bytes[6..8]),
+        std.fmt.fmtSliceHexLower(self.bytes[8..10]),
+        std.fmt.fmtSliceHexLower(self.bytes[10..16]),
+    }) catch unreachable;
+    try std.fmt.formatBuf(buf[0..], options, writer);
+}
+
+test "format" {
+    const uuid = fromInt(0x0123456789ABCDEF0123456789ABCDEF);
+    try std.testing.expectFmt("01234567-89ab-cdef-0123-456789abcdef", "{s}", .{uuid});
 }
 
 /// UUID variant or family.
@@ -177,11 +141,11 @@ pub fn setVersion(uuid: *Uuid, version: Version) void {
 }
 
 test "getVariant/setVariant and getVersion/setVersion" {
-    var uuid = try parse("6ba7b810-9dad-11d1-80b4-00c04fd430c8");
+    var uuid = try fromString("6ba7b810-9dad-11d1-80b4-00c04fd430c8");
     try std.testing.expectEqual(Variant.rfc4122, uuid.getVariant());
     try std.testing.expectEqual(Version.time_based_gregorian, try uuid.getVersion());
 
-    uuid = try parse("3d813cbb-47fb-32ba-91df-831e1593ac29");
+    uuid = try fromString("3d813cbb-47fb-32ba-91df-831e1593ac29");
     try std.testing.expectEqual(Variant.rfc4122, uuid.getVariant());
     try std.testing.expectEqual(Version.name_based_md5, try uuid.getVersion());
 
@@ -192,7 +156,7 @@ test "getVariant/setVariant and getVersion/setVersion" {
     try std.testing.expectEqual(Version.random, try uuid.getVersion());
 }
 
-/// UUID version 1 created from a Gregorian Epoch nanosecond timestamp and
+/// UUIDv1 created from a Gregorian Epoch nanosecond timestamp and
 /// pseudo-randomly generated MAC address.
 pub const V1 = struct {
     /// Number of 100-nanosecond intervals from Gregorian Epoch (1582-10-15T00:00:00Z) to UNIX Epoch (1970-01-01T00:00:00Z).
@@ -209,6 +173,7 @@ pub const V1 = struct {
         timestamp: u60 = 0,
         sequence: u14 = 0,
 
+        /// Initializes clock state.
         pub fn init(random: std.rand.Random) Clock {
             return .{ .random = random };
         }
@@ -228,12 +193,14 @@ pub const V1 = struct {
         }
     };
 
+    /// Initializes UUIDv1 state.
     pub fn init(clock: *Clock, random: std.rand.Random) V1 {
         return .{ .clock = clock, .random = random };
     }
 
+    /// Creates another UUIDv1.
     pub fn next(self: V1) Uuid {
-        const timestamp = nanosToTimestamp(std.time.nanoTimestamp());
+        const timestamp = nanoToUuidTimestamp(std.time.nanoTimestamp());
         var mac: [6]u8 = undefined;
         self.random.bytes(mac[0..]);
         mac[0] |= 1;
@@ -250,13 +217,14 @@ pub const V1 = struct {
         return uuid;
     }
 
-    /// Converts a nanosecond timestamp to a version 1 UUID timestamp.
-    pub fn nanosToTimestamp(nanos: i128) u60 {
+    /// Converts a nanosecond timestamp to a UUIDv1 timestamp.
+    pub fn nanoToUuidTimestamp(nanos: i128) u60 {
         const num_intervals_SINCE_UNIX = @divTrunc(nanos, 100);
         const num_intervals: u128 = @bitCast(num_intervals_SINCE_UNIX + NUM_INTERVALS_BEFORE_UNIX);
         return @truncate(num_intervals);
     }
 
+    /// Returns the UUIDv1 timestamp.
     pub fn getTimestamp(uuid: Uuid) u60 {
         const lo = std.mem.readIntBig(u32, uuid.bytes[0..4]);
         const md = std.mem.readIntBig(u16, uuid.bytes[4..6]);
@@ -279,10 +247,11 @@ pub const V1 = struct {
         const v1 = V1.init(&clock, prng.random());
         const uuid1 = v1.next();
         const uuid2 = v1.next();
-        try std.testing.expect(!std.mem.eql(u8, &uuid1.bytes, &uuid2.bytes));
+        try std.testing.expect(!std.mem.eql(u8, uuid1.bytes[0..], uuid2.bytes[0..]));
         try std.testing.expect(!std.mem.eql(u8, uuid1.bytes[10..], uuid2.bytes[10..]));
     }
 
+    /// Creates a UUIDv1 from UUIDv6.
     pub fn fromV6(uuid_v6: Uuid) Uuid {
         var uuid_v1 = uuid_v6;
         setTimestamp(&uuid_v1, V6.getTimestamp(uuid_v6));
@@ -301,7 +270,7 @@ pub const V1 = struct {
     }
 };
 
-/// UUID version 2 created from a version 1 UUID and user's UID or GID on POSIX systems.
+/// UUIDv2 created from a UUIDv1 and user's UID or GID on POSIX systems.
 pub const V2 = struct {
     /// Domain represents the ID domain.
     const Domain = enum {
@@ -312,10 +281,12 @@ pub const V2 = struct {
 
     v1: V1,
 
+    /// Initializes UUIDv3 state.
     pub fn init(clock: *V1.Clock, random: std.rand.Random) V2 {
         return .{ .v1 = V1.init(clock, random) };
     }
 
+    /// Creates another UUIDv3.
     pub fn next(self: V2, domain: Domain, id: u32) Uuid {
         var uuid = self.v1.next();
         uuid.setVariant(.rfc4122);
@@ -325,30 +296,32 @@ pub const V2 = struct {
         return uuid;
     }
 
+    /// Creates another UUIDv3 for the person domain.
     pub fn nextForPerson(self: V2) Uuid {
         return self.next(Domain.person, std.os.linux.getuid());
     }
 
+    /// Creates another UUIDv3 for the group domain.
     pub fn nextForGroup(self: V2) Uuid {
         return self.next(Domain.group, std.os.linux.getgid());
     }
 
-    // Returns the domain for a version 2 UUID.
+    // Returns the domain for a UUIDv2.
     pub fn getDomain(uuid: Uuid) error{InvalidEnumTag}!Domain {
         return try std.meta.intToEnum(Domain, uuid.bytes[6]);
     }
 
-    // Sets the domain for a version 2 UUID.
+    // Sets the domain for a UUIDv2.
     pub fn setDomain(uuid: *Uuid, domain: Domain) void {
         uuid.bytes[6] = @intFromEnum(domain);
     }
 
-    // Returns the id for a version 2 UUID.
+    // Returns the id for a UUIDv2.
     pub fn getId(uuid: Uuid) u32 {
         return std.mem.readIntBig(u32, uuid.bytes[0..4]);
     }
 
-    // Sets the id for a version 2 UUID.
+    // Sets the id for a UUIDv2.
     pub fn setId(uuid: *Uuid, id: u32) void {
         std.mem.writeIntBig(u32, uuid.bytes[0..4], id);
     }
@@ -363,18 +336,21 @@ pub const V2 = struct {
     }
 };
 
-/// UUID version 3 created from an MD5-hashed name.
+/// UUIDv3 created from an MD5-hashed concatenated input name and namespace identifier.
 pub const V3 = struct {
+    /// DNS namespace identifier.
     pub const DNS = fromInt(0x6BA7B8109DAD11D180B400C04FD430C8);
 
     md5: std.crypto.hash.Md5,
 
+    /// Initializes UUIDv3 state.
     pub fn init(uuid: Uuid) V3 {
         var md5 = std.crypto.hash.Md5.init(.{});
         md5.update(&uuid.bytes);
         return .{ .md5 = md5 };
     }
 
+    /// Creates another UUIDv3.
     pub fn next(self: V3, name: []const u8) Uuid {
         var uuid: Uuid = undefined;
 
@@ -396,14 +372,16 @@ pub const V3 = struct {
     }
 };
 
-/// UUID version 4 created from a pseudo-randomly generated number.
+/// UUIDv4 created from a pseudo-randomly generated number.
 pub const V4 = struct {
     random: std.rand.Random,
 
+    /// Initializes UUIDv4 state.
     pub fn init(random: std.rand.Random) V4 {
         return .{ .random = random };
     }
 
+    /// Creates another UUIDv4.
     pub fn next(self: V4) Uuid {
         var uuid: Uuid = undefined;
 
@@ -423,16 +401,18 @@ pub const V4 = struct {
     }
 };
 
-/// UUID version 5 created from a SHA-1-hashed name.
+/// UUIDv5 created from a SHA-1-hashed concatenated input name and namespace identifier.
 pub const V5 = struct {
     sha1: std.crypto.hash.Sha1,
 
+    /// Initializes UUIDv5 state.
     pub fn init(uuid: Uuid) V5 {
         var sha1 = std.crypto.hash.Sha1.init(.{});
         sha1.update(uuid.bytes[0..]);
         return .{ .sha1 = sha1 };
     }
 
+    /// Creates another UUIDv5.
     pub fn next(self: V5, name: []const u8) Uuid {
         var uuid: Uuid = undefined;
 
@@ -456,21 +436,24 @@ pub const V5 = struct {
     }
 };
 
-/// UUID version 6 created from a Gregorian Epoch nanosecond timestamp and
+/// UUIDv6 created from a Gregorian Epoch nanosecond timestamp and
 /// cryptographically-secure pseudo-randomly generated number.
 pub const V6 = struct {
+    /// Cryptographically-secure pseudo-random number generator.
     pub const RANDOM = std.crypto.random;
 
     clock: *V1.Clock,
 
+    /// Initializes UUIDv6 state.
     pub fn init(clock: *V1.Clock) V6 {
         return .{ .clock = clock };
     }
 
+    /// Creates another UUIDv6.
     pub fn next(self: V6) Uuid {
         var uuid: Uuid = NIL;
 
-        const timestamp = nanosToTimestamp(std.time.nanoTimestamp());
+        const timestamp = nanoToUuidTimestamp(std.time.nanoTimestamp());
         const sequence = self.clock.next(timestamp);
         setTimestamp(&uuid, timestamp);
         std.mem.writeIntBig(u16, uuid.bytes[8..10], sequence);
@@ -481,9 +464,10 @@ pub const V6 = struct {
         return uuid;
     }
 
-    /// Converts a nanosecond timestamp to a version 6 UUID timestamp.
-    pub const nanosToTimestamp = V1.nanosToTimestamp;
+    /// Converts a nanosecond timestamp to a UUIDv6 timestamp.
+    pub const nanoToUuidTimestamp = V1.nanoToUuidTimestamp;
 
+    /// Returns the UUIDv6 timestamp.
     pub fn getTimestamp(uuid: Uuid) u60 {
         const hi = std.mem.readIntBig(u48, uuid.bytes[0..6]);
         const lo = std.mem.readIntBig(u16, uuid.bytes[6..8]) & 0xFFF;
@@ -502,9 +486,10 @@ pub const V6 = struct {
         const v6 = V6.init(&clock);
         const uuid1 = v6.next();
         const uuid2 = v6.next();
-        try std.testing.expect(!std.mem.eql(u8, &uuid1.bytes, &uuid2.bytes));
+        try std.testing.expect(!std.mem.eql(u8, uuid1.bytes[0..], uuid2.bytes[0..]));
     }
 
+    /// Creates a UUIDv6 from a UUIDv1.
     pub fn fromV1(uuid_v1: Uuid) Uuid {
         var uuid_v6 = uuid_v1;
         setTimestamp(&uuid_v6, V1.getTimestamp(uuid_v1));
@@ -523,12 +508,13 @@ pub const V6 = struct {
     }
 };
 
-/// UUID version 7 created from a UNIX Epoch millisecond timestamp and
+/// UUIDv7 created from a UNIX Epoch millisecond timestamp and
 /// cryptographically-secure pseudo-randomly generated number.
 pub const V7 = struct {
     /// Cryptographically-secure pseudo-random number generator.
     pub const RANDOM = std.crypto.random;
 
+    /// Creates another UUIDv7.
     pub fn next() Uuid {
         var uuid: Uuid = NIL;
 
@@ -545,7 +531,7 @@ pub const V7 = struct {
     test "V7" {
         const uuid1 = V7.next();
         const uuid2 = V7.next();
-        try std.testing.expect(!std.mem.eql(u8, &uuid1.bytes, &uuid2.bytes));
+        try std.testing.expect(!std.mem.eql(u8, uuid1.bytes[0..], uuid2.bytes[0..]));
     }
 };
 

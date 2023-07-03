@@ -10,29 +10,29 @@ pub fn build(b: *std.Build) void {
         .root_source_file = root_source_file,
         .target = b.standardTargetOptions(.{}),
         .optimize = .ReleaseSafe,
-        .version = .{ .major = 1, .minor = 0, .patch = 0 },
+        .version = .{ .major = 1, .minor = 0, .patch = 1 },
     });
     lib.emit_docs = .emit;
 
     const lib_install = b.addInstallArtifact(lib);
-    const lib_step = b.step("lib", "Install lib");
+    const lib_step = b.step("lib", "Install library");
     lib_step.dependOn(&lib_install.step);
     b.default_step.dependOn(lib_step);
 
-    const benchmarks = b.addExecutable(.{
-        .name = "uuid-bench",
-        .root_source_file = std.Build.FileSource.relative("src/benchmarks.zig"),
+    const benchs = b.addExecutable(.{
+        .name = "uuid_bench",
+        .root_source_file = std.Build.FileSource.relative("src/benchs.zig"),
         .optimize = .ReleaseFast,
     });
 
-    const benchmarks_run = b.addRunArtifact(benchmarks);
+    const benchs_run = b.addRunArtifact(benchs);
     if (b.args) |args| {
-        benchmarks_run.addArgs(args);
+        benchs_run.addArgs(args);
     }
 
-    const benchmarks_step = b.step("bench", "Run benchmarks");
-    benchmarks_step.dependOn(&benchmarks_run.step);
-    b.default_step.dependOn(benchmarks_step);
+    const benchs_step = b.step("bench", "Run benchs");
+    benchs_step.dependOn(&benchs_run.step);
+    b.default_step.dependOn(benchs_step);
 
     const tests = b.addTest(.{
         .root_source_file = root_source_file,
