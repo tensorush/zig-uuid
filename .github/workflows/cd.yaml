@@ -42,22 +42,20 @@ jobs:
         run: |
           tar -czvf ./artifact.tar.gz --exclude=./docs/src/std/ ./docs/
 
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v3
-
-      - name: Upload artifact for GitHub Pages
-        uses: actions/upload-pages-artifact@v1
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
         with:
+          name: github-pages
           path: ./artifact.tar.gz
 
   deploy:
     needs: build
 
+    runs-on: ubuntu-latest
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
-    runs-on: ubuntu-latest
 
     steps:
       - name: Deploy to GitHub Pages
