@@ -3,14 +3,14 @@ const std = @import("std");
 pub fn build(b: *std.Build) void {
     const root_source_file = std.Build.FileSource.relative("src/Uuid.zig");
 
-    _ = b.addModule("uuid", .{ .source_file = root_source_file });
+    _ = b.addModule("Uuid", .{ .source_file = root_source_file });
 
     const lib = b.addStaticLibrary(.{
         .name = "uuid",
         .root_source_file = root_source_file,
         .target = b.standardTargetOptions(.{}),
         .optimize = .ReleaseSafe,
-        .version = .{ .major = 1, .minor = 1, .patch = 0 },
+        .version = .{ .major = 1, .minor = 1, .patch = 1 },
     });
     lib.emit_docs = .emit;
 

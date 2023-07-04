@@ -7,6 +7,11 @@ pub const NIL = fromInt(0);
 
 bytes: [16]u8,
 
+pub const Error = error{
+    InvalidCharacter,
+    InvalidEnumTag,
+};
+
 /// Creates a UUID from a u128-bit integer.
 pub fn fromInt(int: u128) Uuid {
     var uuid: Uuid = undefined;
@@ -30,7 +35,7 @@ test "fromBytes" {
 }
 
 /// Creates a UUID from an RFC-4122-formatted string.
-pub fn fromString(str: []const u8) error{InvalidCharacter}!Uuid {
+pub fn fromString(str: []const u8) Error!Uuid {
     std.debug.assert(str.len == 36 and str[8] == '-' and str[13] == '-' and str[18] == '-' and str[23] == '-');
 
     var uuid: Uuid = undefined;
@@ -130,7 +135,7 @@ pub const Version = enum {
 };
 
 /// Returns the UUID version.
-pub fn getVersion(self: Uuid) error{InvalidEnumTag}!Version {
+pub fn getVersion(self: Uuid) Error!Version {
     const version_int: u4 = @truncate(self.bytes[6] >> 4);
     return try std.meta.intToEnum(Version, version_int);
 }
@@ -307,7 +312,7 @@ pub const V2 = struct {
     }
 
     // Returns the domain for a UUIDv2.
-    pub fn getDomain(uuid: Uuid) error{InvalidEnumTag}!Domain {
+    pub fn getDomain(uuid: Uuid) Error!Domain {
         return try std.meta.intToEnum(Domain, uuid.bytes[6]);
     }
 
