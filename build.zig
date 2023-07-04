@@ -10,7 +10,7 @@ pub fn build(b: *std.Build) void {
         .root_source_file = root_source_file,
         .target = b.standardTargetOptions(.{}),
         .optimize = .ReleaseSafe,
-        .version = .{ .major = 1, .minor = 0, .patch = 1 },
+        .version = .{ .major = 1, .minor = 1, .patch = 0 },
     });
     lib.emit_docs = .emit;
 
