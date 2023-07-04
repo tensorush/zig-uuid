@@ -178,7 +178,7 @@ pub const V1 = struct {
             return .{ .random = random };
         }
 
-        fn next(self: *Clock, timestamp: u60) u14 {
+        fn new(self: *Clock, timestamp: u60) u14 {
             self.mutex.lock();
             defer self.mutex.unlock();
 
@@ -198,8 +198,8 @@ pub const V1 = struct {
         return .{ .clock = clock, .random = random };
     }
 
-    /// Creates another UUIDv1.
-    pub fn next(self: V1) Uuid {
+    /// Creates a new UUIDv1.
+    pub fn new(self: V1) Uuid {
         const timestamp = nanoToUuidTimestamp(std.time.nanoTimestamp());
         var mac: [6]u8 = undefined;
         self.random.bytes(mac[0..]);
@@ -207,7 +207,7 @@ pub const V1 = struct {
 
         var uuid: Uuid = undefined;
 
-        const sequence = self.clock.next(timestamp);
+        const sequence = self.clock.new(timestamp);
         setTimestamp(&uuid, timestamp);
         std.mem.writeIntBig(u16, uuid.bytes[8..10], sequence);
         @memcpy(uuid.bytes[10..], mac[0..]);
@@ -245,8 +245,8 @@ pub const V1 = struct {
         var prng = std.rand.DefaultPrng.init(0);
         var clock = V1.Clock.init(prng.random());
         const v1 = V1.init(&clock, prng.random());
-        const uuid1 = v1.next();
-        const uuid2 = v1.next();
+        const uuid1 = v1.new();
+        const uuid2 = v1.new();
         try std.testing.expect(!std.mem.eql(u8, uuid1.bytes[0..], uuid2.bytes[0..]));
         try std.testing.expect(!std.mem.eql(u8, uuid1.bytes[10..], uuid2.bytes[10..]));
     }
@@ -262,7 +262,7 @@ pub const V1 = struct {
     test "fromV6" {
         var clock = V1.Clock.init(V6.RANDOM);
         const v6 = V6.init(&clock);
-        const uuid_v6 = v6.next();
+        const uuid_v6 = v6.new();
         const uuid_v1 = V1.fromV6(uuid_v6);
         try std.testing.expectEqual(uuid_v6.getVariant(), uuid_v1.getVariant());
         try std.testing.expectEqual(Version.time_based_gregorian, try uuid_v1.getVersion());
@@ -286,9 +286,9 @@ pub const V2 = struct {
         return .{ .v1 = V1.init(clock, random) };
     }
 
-    /// Creates another UUIDv3.
-    pub fn next(self: V2, domain: Domain, id: u32) Uuid {
-        var uuid = self.v1.next();
+    /// Creates a new UUIDv3.
+    pub fn new(self: V2, domain: Domain, id: u32) Uuid {
+        var uuid = self.v1.new();
         uuid.setVariant(.rfc4122);
         uuid.setVersion(.dce_security);
         setDomain(&uuid, domain);
@@ -296,14 +296,14 @@ pub const V2 = struct {
         return uuid;
     }
 
-    /// Creates another UUIDv3 for the person domain.
+    /// Creates a new UUIDv3 for the person domain.
     pub fn nextForPerson(self: V2) Uuid {
-        return self.next(Domain.person, std.os.linux.getuid());
+        return self.new(Domain.person, std.os.linux.getuid());
     }
 
-    /// Creates another UUIDv3 for the group domain.
+    /// Creates a new UUIDv3 for the group domain.
     pub fn nextForGroup(self: V2) Uuid {
-        return self.next(Domain.group, std.os.linux.getgid());
+        return self.new(Domain.group, std.os.linux.getgid());
     }
 
     // Returns the domain for a UUIDv2.
@@ -330,7 +330,7 @@ pub const V2 = struct {
         var prng = std.rand.DefaultPrng.init(0);
         var clock = V1.Clock.init(prng.random());
         const v2 = V2.init(&clock, prng.random());
-        const uuid = v2.next(Domain.person, 12345678);
+        const uuid = v2.new(Domain.person, 12345678);
         try std.testing.expectEqual(Domain.person, try V2.getDomain(uuid));
         try std.testing.expectEqual(@as(u32, 12345678), V2.getId(uuid));
     }
@@ -350,8 +350,8 @@ pub const V3 = struct {
         return .{ .md5 = md5 };
     }
 
-    /// Creates another UUIDv3.
-    pub fn next(self: V3, name: []const u8) Uuid {
+    /// Creates a new UUIDv3.
+    pub fn new(self: V3, name: []const u8) Uuid {
         var uuid: Uuid = undefined;
 
         var md5 = self.md5;
@@ -365,9 +365,9 @@ pub const V3 = struct {
 
     test "V3" {
         const v3 = V3.init(V3.DNS);
-        const uuid1 = v3.next("www.example.com");
+        const uuid1 = v3.new("www.example.com");
         try std.testing.expectEqual(fromInt(0x5DF418813AED351588A72F4A814CF09E), uuid1);
-        const uuid2 = v3.next("www.example.com");
+        const uuid2 = v3.new("www.example.com");
         try std.testing.expectEqual(uuid1, uuid2);
     }
 };
@@ -381,8 +381,8 @@ pub const V4 = struct {
         return .{ .random = random };
     }
 
-    /// Creates another UUIDv4.
-    pub fn next(self: V4) Uuid {
+    /// Creates a new UUIDv4.
+    pub fn new(self: V4) Uuid {
         var uuid: Uuid = undefined;
 
         self.random.bytes(uuid.bytes[0..]);
@@ -395,8 +395,8 @@ pub const V4 = struct {
     test "V4" {
         var prng = std.rand.DefaultPrng.init(0);
         var v4 = V4.init(prng.random());
-        const uuid1 = v4.next();
-        const uuid2 = v4.next();
+        const uuid1 = v4.new();
+        const uuid2 = v4.new();
         try std.testing.expect(!std.mem.eql(u8, uuid1.bytes[0..], uuid2.bytes[0..]));
     }
 };
@@ -412,8 +412,8 @@ pub const V5 = struct {
         return .{ .sha1 = sha1 };
     }
 
-    /// Creates another UUIDv5.
-    pub fn next(self: V5, name: []const u8) Uuid {
+    /// Creates a new UUIDv5.
+    pub fn new(self: V5, name: []const u8) Uuid {
         var uuid: Uuid = undefined;
 
         var sha1 = self.sha1;
@@ -429,9 +429,9 @@ pub const V5 = struct {
 
     test "V5" {
         const v5 = V5.init(V3.DNS);
-        const uuid1 = v5.next("www.example.com");
+        const uuid1 = v5.new("www.example.com");
         try std.testing.expectEqual(fromInt(0x2ED6657DE927568B95E12665A8AEA6A2), uuid1);
-        const uuid2 = v5.next("www.example.com");
+        const uuid2 = v5.new("www.example.com");
         try std.testing.expectEqual(uuid1, uuid2);
     }
 };
@@ -449,12 +449,12 @@ pub const V6 = struct {
         return .{ .clock = clock };
     }
 
-    /// Creates another UUIDv6.
-    pub fn next(self: V6) Uuid {
+    /// Creates a new UUIDv6.
+    pub fn new(self: V6) Uuid {
         var uuid: Uuid = NIL;
 
         const timestamp = nanoToUuidTimestamp(std.time.nanoTimestamp());
-        const sequence = self.clock.next(timestamp);
+        const sequence = self.clock.new(timestamp);
         setTimestamp(&uuid, timestamp);
         std.mem.writeIntBig(u16, uuid.bytes[8..10], sequence);
         RANDOM.bytes(uuid.bytes[10..]);
@@ -484,8 +484,8 @@ pub const V6 = struct {
     test "V6" {
         var clock = V1.Clock.init(V6.RANDOM);
         const v6 = V6.init(&clock);
-        const uuid1 = v6.next();
-        const uuid2 = v6.next();
+        const uuid1 = v6.new();
+        const uuid2 = v6.new();
         try std.testing.expect(!std.mem.eql(u8, uuid1.bytes[0..], uuid2.bytes[0..]));
     }
 
@@ -501,7 +501,7 @@ pub const V6 = struct {
         var prng = std.rand.DefaultPrng.init(0);
         var clock = V1.Clock.init(prng.random());
         const v1 = V1.init(&clock, prng.random());
-        const uuid_v1 = v1.next();
+        const uuid_v1 = v1.new();
         const uuid_v6 = fromV1(uuid_v1);
         try std.testing.expectEqual(uuid_v1.getVariant(), uuid_v6.getVariant());
         try std.testing.expectEqual(Version.time_based_gregorian_reordered, try uuid_v6.getVersion());
@@ -514,8 +514,8 @@ pub const V7 = struct {
     /// Cryptographically-secure pseudo-random number generator.
     pub const RANDOM = std.crypto.random;
 
-    /// Creates another UUIDv7.
-    pub fn next() Uuid {
+    /// Creates a new UUIDv7.
+    pub fn new() Uuid {
         var uuid: Uuid = NIL;
 
         const millis: u64 = @bitCast(std.time.milliTimestamp());
@@ -529,8 +529,8 @@ pub const V7 = struct {
     }
 
     test "V7" {
-        const uuid1 = V7.next();
-        const uuid2 = V7.next();
+        const uuid1 = V7.new();
+        const uuid2 = V7.new();
         try std.testing.expect(!std.mem.eql(u8, uuid1.bytes[0..], uuid2.bytes[0..]));
     }
 };

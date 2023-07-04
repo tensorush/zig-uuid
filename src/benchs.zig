@@ -23,15 +23,15 @@ const V = union(enum) {
     v6: Uuid.V6,
     v7: Uuid.V7,
 
-    pub fn next(self: *V, name: []const u8) Uuid {
+    pub fn new(self: *V, name: []const u8) Uuid {
         return switch (self.*) {
-            .v1 => |v1| v1.next(),
+            .v1 => |v1| v1.new(),
             .v2 => |v2| v2.nextForPerson(),
-            .v3 => |v3| v3.next(name),
-            .v4 => |v4| v4.next(),
-            .v5 => |v5| v5.next(name),
-            .v6 => |v6| v6.next(),
-            .v7 => Uuid.V7.next(),
+            .v3 => |v3| v3.new(name),
+            .v4 => |v4| v4.new(),
+            .v5 => |v5| v5.new(name),
+            .v6 => |v6| v6.new(),
+            .v7 => Uuid.V7.new(),
         };
     }
 };
@@ -100,7 +100,7 @@ pub fn main() !void {
     const start = timer.lap();
     i = 1;
     while (i <= num_iters) : (i += 1) {
-        const uuid = v.next(domain_name);
+        const uuid = v.new(domain_name);
         try stdout.print("    iteration {d}, uuid: {s} \n", .{ i, uuid });
     }
     const end = timer.read();
