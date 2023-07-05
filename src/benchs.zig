@@ -2,7 +2,7 @@ const std = @import("std");
 const Uuid = @import("Uuid.zig");
 
 const HELP =
-    \\uuid-bench [options]
+    \\uuid_bench [options]
     \\
     \\Options:
     \\  -v <u3>     Provide a specific UUID version (default: 7).
@@ -36,7 +36,7 @@ const V = union(enum) {
     }
 };
 
-pub fn main() !void {
+pub fn main() MainError!void {
     const stdout = std.io.getStdOut().writer();
 
     var buf: [1024]u8 = undefined;
