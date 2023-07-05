@@ -3,8 +3,10 @@ const std = @import("std");
 pub fn build(b: *std.Build) void {
     const root_source_file = std.Build.FileSource.relative("src/Uuid.zig");
 
+    // Module
     _ = b.addModule("Uuid", .{ .source_file = root_source_file });
 
+    // Library
     const lib = b.addStaticLibrary(.{
         .name = "uuid",
         .root_source_file = root_source_file,
@@ -19,21 +21,23 @@ pub fn build(b: *std.Build) void {
     lib_step.dependOn(&lib_install.step);
     b.default_step.dependOn(lib_step);
 
-    const benchs = b.addExecutable(.{
+    // Benchmark
+    const bench = b.addExecutable(.{
         .name = "uuid_bench",
-        .root_source_file = std.Build.FileSource.relative("src/benchs.zig"),
+        .root_source_file = std.Build.FileSource.relative("src/bench.zig"),
         .optimize = .ReleaseFast,
     });
 
-    const benchs_run = b.addRunArtifact(benchs);
+    const bench_run = b.addRunArtifact(bench);
     if (b.args) |args| {
-        benchs_run.addArgs(args);
+        bench_run.addArgs(args);
     }
 
-    const benchs_step = b.step("bench", "Run benchmarks");
-    benchs_step.dependOn(&benchs_run.step);
-    b.default_step.dependOn(benchs_step);
+    const bench_step = b.step("bench", "Run benchmarks");
+    bench_step.dependOn(&bench_run.step);
+    b.default_step.dependOn(bench_step);
 
+    // Tests
     const tests = b.addTest(.{
         .root_source_file = root_source_file,
     });
@@ -43,6 +47,7 @@ pub fn build(b: *std.Build) void {
     tests_step.dependOn(&tests_run.step);
     b.default_step.dependOn(tests_step);
 
+    // Lints
     const lints = b.addFmt(.{
         .paths = &[_][]const u8{ "src", "build.zig" },
         .check = true,

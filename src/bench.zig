@@ -1,3 +1,5 @@
+//! Root benchmark file that times a specific UUID version.
+
 const std = @import("std");
 const Uuid = @import("Uuid.zig");
 
@@ -72,7 +74,7 @@ pub fn main() MainError!void {
             num_iters = try std.fmt.parseUnsigned(usize, args[i], 10);
         } else if (std.mem.eql(u8, args[i], "-h")) {
             std.debug.print(HELP, .{});
-            return;
+            return {};
         } else {
             std.debug.print(HELP, .{});
             std.os.exit(1);

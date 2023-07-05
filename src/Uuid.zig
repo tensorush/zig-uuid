@@ -1,3 +1,5 @@
+//! Root library file that exposes the public API.
+
 const std = @import("std");
 
 const Uuid = @This();
