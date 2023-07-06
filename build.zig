@@ -53,6 +53,7 @@ pub fn build(b: *std.Build) void {
 
     const cov_step = b.step("cov", "Generate code coverage report");
     cov_step.dependOn(&cov_run.step);
+    b.default_step.dependOn(cov_step);
 
     // Lints
     const lints = b.addFmt(.{
