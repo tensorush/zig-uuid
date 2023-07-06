@@ -29,6 +29,9 @@ jobs:
           zig env
           zig build test
 
+      - name: Set up kcov
+        run: apt install kcov
+
       - name: Generate code coverage report
         run: zig build cov
 
