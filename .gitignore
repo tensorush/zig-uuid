@@ -1,4 +1,4 @@
-kcov-output/
+kcov_output/
 zig-cache/
 zig-out/
 docs/
