@@ -48,10 +48,10 @@ pub fn build(b: *std.Build) void {
     b.default_step.dependOn(tests_step);
 
     // Code coverage
-    const cov_run = b.addSystemCommand(&.{ "kcov", "--clean", "--include-pattern=./src/", "kcov-output" });
+    const cov_run = b.addSystemCommand(&.{ "kcov", "--clean", "--include-pattern=src", "kcov-output" });
     cov_run.addArtifactArg(tests);
 
-    const cov_step = b.step("cov", "Generate code coverage report");
+    const cov_step = b.step("cov", "Install tests and generate code coverage report");
     cov_step.dependOn(&cov_run.step);
     b.default_step.dependOn(cov_step);
 

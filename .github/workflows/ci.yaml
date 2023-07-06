@@ -35,14 +35,9 @@ jobs:
       - name: Generate code coverage report
         run: zig build cov
 
-      - name: Upload code coverage report to Codecov
+      - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          name: code_coverage_report
-          directory: kcov_output
-          fail_ci_if_error: true
-          verbose: true
+          env: CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   lint:
     runs-on: ubuntu-latest
