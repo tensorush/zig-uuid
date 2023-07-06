@@ -48,14 +48,9 @@ pub fn build(b: *std.Build) void {
     b.default_step.dependOn(tests_step);
 
     // Code coverage
-    const cov = b.addTest(.{
-        .root_source_file = root_source_file,
-    });
-    tests.setExecCmd(&.{ "kcov", "--clean", "--include-pattern=src/", "./kcov-output", null });
+    const cov_run = b.addSystemCommand(&.{ "kcov", "--clean", "--include-pattern=./src/", "kcov-output" });
+    cov_run.addArtifactArg(tests);
 
-    _ = b.addRunArtifact(cov);
-    const cov_run = b.addSystemCommand(&.{ "kcov", "--clean", "--include-pattern=src/", "./kcov-output" });
-    cov_run.addArtifactArg(cov);
     const cov_step = b.step("cov", "Generate code coverage report");
     cov_step.dependOn(&cov_run.step);
 
