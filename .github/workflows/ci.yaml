@@ -30,7 +30,7 @@ jobs:
           zig build test
 
       - name: Set up kcov
-        run: apt install kcov
+        run: sudo apt install kcov
 
       - name: Generate code coverage report
         run: zig build cov
