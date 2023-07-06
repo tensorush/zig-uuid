@@ -51,10 +51,10 @@ pub fn build(b: *std.Build) void {
     const cov = b.addTest(.{
         .root_source_file = root_source_file,
     });
-    tests.setExecCmd(&.{ "kcov", "--clean", "--include-pattern=src/", "kcov-output", null });
+    tests.setExecCmd(&.{ "kcov", "--clean", "--include-pattern=src/", "./kcov-output", null });
 
     _ = b.addRunArtifact(cov);
-    const cov_run = b.addSystemCommand(&.{ "kcov", "--clean", "--include-pattern=src/", "kcov-output" });
+    const cov_run = b.addSystemCommand(&.{ "kcov", "--clean", "--include-pattern=src/", "./kcov-output" });
     cov_run.addArtifactArg(cov);
     const cov_step = b.step("cov", "Generate code coverage report");
     cov_step.dependOn(&cov_run.step);
