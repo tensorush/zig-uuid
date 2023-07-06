@@ -5,7 +5,6 @@
 [![Docs][docs-shield]][docs-url]
 [![Codecov][codecov-shield]][codecov-url]
 [![License][license-shield]][license-url]
-[![Resources][resources-shield]][resources-url]
 
 ### Zig implementation of all [Universally Unique IDentifier (UUID) versions](https://www.ietf.org/archive/id/draft-peabody-dispatch-new-uuid-format-04.html).
 
@@ -59,5 +58,3 @@
 [codecov-url]: https://app.codecov.io/gh/tensorush/zig-uuid
 [license-shield]: https://img.shields.io/github/license/tensorush/zig-uuid.svg?style=for-the-badge&labelColor=black
 [license-url]: https://github.com/tensorush/zig-uuid/blob/main/LICENSE.md
-[resources-shield]: https://img.shields.io/badge/click-F6A516?style=for-the-badge&logo=zig&logoColor=F6A516&label=resources&labelColor=black
-[resources-url]: https://github.com/tensorush/Awesome-Languages-Learning#lizard-zig
