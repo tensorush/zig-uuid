@@ -9,6 +9,8 @@ on:
     branches: [main]
     paths: ["**.zig"]
 
+  workflow_dispatch:
+
 jobs:
   test:
     runs-on: ubuntu-latest
