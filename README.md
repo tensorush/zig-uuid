@@ -6,7 +6,7 @@
 [![Codecov][codecov-shield]][codecov-url]
 [![License][license-shield]][license-url]
 
-### Zig implementation of all [Universally Unique IDentifier (UUID) versions](https://www.ietf.org/archive/id/draft-peabody-dispatch-new-uuid-format-04.html).
+### Zig implementation of all the [Universally Unique IDentifier (UUID) versions](https://www.ietf.org/archive/id/draft-peabody-dispatch-new-uuid-format-04.html).
 
 #### :rocket: Usage
 
