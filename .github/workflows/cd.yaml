@@ -33,7 +33,7 @@ jobs:
         with:
           version: master
 
-      - name: Emit docs
+      - name: Emit documentation
         run: |
           zig env
           zig build lib
