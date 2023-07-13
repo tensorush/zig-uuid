@@ -40,12 +40,13 @@ pub fn build(b: *std.Build) void {
     b.default_step.dependOn(bench_step);
 
     // Tests
+    const tests_step = b.step("test", "Run tests");
+
     const tests = b.addTest(.{
         .root_source_file = root_source_file,
     });
 
     const tests_run = b.addRunArtifact(tests);
-    const tests_step = b.step("test", "Run tests");
     tests_step.dependOn(&tests_run.step);
     b.default_step.dependOn(tests_step);
 
