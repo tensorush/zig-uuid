@@ -62,7 +62,7 @@ test "fromString" {
 
 /// Formats the UUID according to RFC-4122.
 pub fn format(self: Uuid, comptime _: []const u8, _: std.fmt.FormatOptions, writer: anytype) (@TypeOf(writer).Error)!void {
-    try writer.print("{}-{}-{}-{}-{}", .{
+    try std.fmt.format(writer, "{}-{}-{}-{}-{}", .{
         std.fmt.fmtSliceHexLower(self.bytes[0..4]),
         std.fmt.fmtSliceHexLower(self.bytes[4..6]),
         std.fmt.fmtSliceHexLower(self.bytes[6..8]),
