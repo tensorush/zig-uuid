@@ -61,16 +61,14 @@ test "fromString" {
 }
 
 /// Formats the UUID according to RFC-4122.
-pub fn format(self: Uuid, comptime _: []const u8, options: std.fmt.FormatOptions, writer: anytype) (@TypeOf(writer).Error)!void {
-    var buf: [36]u8 = undefined;
-    _ = std.fmt.bufPrint(buf[0..], "{}-{}-{}-{}-{}", .{
+pub fn format(self: Uuid, comptime _: []const u8, _: std.fmt.FormatOptions, writer: anytype) (@TypeOf(writer).Error)!void {
+    try writer.print("{}-{}-{}-{}-{}", .{
         std.fmt.fmtSliceHexLower(self.bytes[0..4]),
         std.fmt.fmtSliceHexLower(self.bytes[4..6]),
         std.fmt.fmtSliceHexLower(self.bytes[6..8]),
         std.fmt.fmtSliceHexLower(self.bytes[8..10]),
         std.fmt.fmtSliceHexLower(self.bytes[10..16]),
-    }) catch unreachable;
-    try std.fmt.formatBuf(buf[0..], options, writer);
+    });
 }
 
 test "format" {
