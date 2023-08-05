@@ -41,7 +41,7 @@
 
     ```zig
     const uuid = b.dependency("uuid", .{});
-    exe.addModule("uuid", uuid.module("uuid"));
+    exe.addModule("Uuid", uuid.module("Uuid"));
     ```
 
     </details>

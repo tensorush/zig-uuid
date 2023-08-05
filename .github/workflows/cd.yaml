@@ -30,19 +30,16 @@ jobs:
 
       - name: Set up Zig
         uses: goto-bus-stop/setup-zig@v2
-        with:
-          version: master
 
-      - name: Emit documentation
+      - name: Emit docs
         run: |
-          zig env
-          zig build lib
-          rm -rf ./docs/src/std/
+          zig build docs
+          rm -rf zig-out/docs/src/std/
 
       - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v1
         with:
-          path: ./docs/
+          path: zig-out/docs/
 
   deploy:
     needs: build
