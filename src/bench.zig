@@ -14,7 +14,7 @@ const HELP =
     \\
 ;
 
-const MainError = std.mem.Allocator.Error || std.time.Timer.Error || std.process.ArgIterator.InitError || std.fmt.ParseIntError || std.os.WriteError;
+const Error = std.mem.Allocator.Error || std.time.Timer.Error || std.process.ArgIterator.InitError || std.fmt.ParseIntError || std.os.WriteError;
 
 const V = union(enum) {
     v1: Uuid.V1,
@@ -38,7 +38,7 @@ const V = union(enum) {
     }
 };
 
-pub fn main() MainError!void {
+pub fn main() Error!void {
     const stdout = std.io.getStdOut().writer();
 
     var buf: [1024]u8 = undefined;
