@@ -13,7 +13,7 @@ pub fn build(b: *std.Build) void {
         .name = "uuid",
         .root_source_file = root_source_file,
         .target = b.standardTargetOptions(.{}),
-        .optimize = .ReleaseSafe,
+        .optimize = b.standardOptimizeOption(.{}),
         .version = .{ .major = 1, .minor = 2, .patch = 0 },
     });
 
