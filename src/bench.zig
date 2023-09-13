@@ -87,7 +87,7 @@ pub fn main() Error!void {
     var clock: Uuid.V1.Clock = if (ver == 3 or ver == 5) Uuid.V1.Clock.init(random) else undefined;
 
     var v: V = switch (ver) {
-        0 => @panic("PANIC: Version 0 is unused!"),
+        0 => @panic("PANIC: Version 0 is unused!\n"),
         1 => .{ .v1 = Uuid.V1.init(&clock, random) },
         2 => .{ .v2 = Uuid.V2.init(&clock, random) },
         3 => .{ .v3 = Uuid.V3.init(Uuid.V3.DNS) },
