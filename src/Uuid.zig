@@ -17,7 +17,7 @@ pub const Error = error{
 /// Creates a UUID from a u128-bit integer.
 pub fn fromInt(int: u128) Uuid {
     var uuid: Uuid = undefined;
-    std.mem.writeIntBig(u128, uuid.bytes[0..], int);
+    std.mem.writeInt(u128, uuid.bytes[0..], int, .big);
     return uuid;
 }
 
@@ -214,7 +214,7 @@ pub const V1 = struct {
 
         const sequence = self.clock.new(timestamp);
         setTimestamp(&uuid, timestamp);
-        std.mem.writeIntBig(u16, uuid.bytes[8..10], sequence);
+        std.mem.writeInt(u16, uuid.bytes[8..10], sequence, .big);
         @memcpy(uuid.bytes[10..], mac[0..]);
 
         uuid.setVariant(.rfc4122);
@@ -231,19 +231,19 @@ pub const V1 = struct {
 
     /// Returns the UUIDv1 timestamp.
     pub fn getTimestamp(uuid: Uuid) u60 {
-        const lo = std.mem.readIntBig(u32, uuid.bytes[0..4]);
-        const md = std.mem.readIntBig(u16, uuid.bytes[4..6]);
-        const hi = std.mem.readIntBig(u16, uuid.bytes[6..8]) & 0xFFF;
+        const lo = std.mem.readInt(u32, uuid.bytes[0..4], .big);
+        const md = std.mem.readInt(u16, uuid.bytes[4..6], .big);
+        const hi = std.mem.readInt(u16, uuid.bytes[6..8], .big) & 0xFFF;
         return @as(u60, hi) << 48 | @as(u60, md) << 32 | @as(u60, lo);
     }
 
     fn setTimestamp(uuid: *Uuid, timestamp: u60) void {
         const timestamp_u32: u32 = @truncate(timestamp);
-        std.mem.writeIntBig(u32, uuid.bytes[0..4], timestamp_u32);
+        std.mem.writeInt(u32, uuid.bytes[0..4], timestamp_u32, .big);
         var timestamp_u16: u16 = @truncate(timestamp >> 32);
-        std.mem.writeIntBig(u16, uuid.bytes[4..6], timestamp_u16);
+        std.mem.writeInt(u16, uuid.bytes[4..6], timestamp_u16, .big);
         timestamp_u16 = @truncate(timestamp >> 48);
-        std.mem.writeIntBig(u16, uuid.bytes[6..8], timestamp_u16);
+        std.mem.writeInt(u16, uuid.bytes[6..8], timestamp_u16, .big);
     }
 
     test "V1" {
@@ -323,12 +323,12 @@ pub const V2 = struct {
 
     // Returns the id for a UUIDv2.
     pub fn getId(uuid: Uuid) u32 {
-        return std.mem.readIntBig(u32, uuid.bytes[0..4]);
+        return std.mem.readInt(u32, uuid.bytes[0..4], .big);
     }
 
     // Sets the id for a UUIDv2.
     pub fn setId(uuid: *Uuid, id: u32) void {
-        std.mem.writeIntBig(u32, uuid.bytes[0..4], id);
+        std.mem.writeInt(u32, uuid.bytes[0..4], id, .big);
     }
 
     test "V2" {
@@ -461,7 +461,7 @@ pub const V6 = struct {
         const timestamp = nanoToUuidTimestamp(std.time.nanoTimestamp());
         const sequence = self.clock.new(timestamp);
         setTimestamp(&uuid, timestamp);
-        std.mem.writeIntBig(u16, uuid.bytes[8..10], sequence);
+        std.mem.writeInt(u16, uuid.bytes[8..10], sequence, .big);
         RANDOM.bytes(uuid.bytes[10..]);
 
         uuid.setVariant(.rfc4122);
@@ -474,16 +474,16 @@ pub const V6 = struct {
 
     /// Returns the UUIDv6 timestamp.
     pub fn getTimestamp(uuid: Uuid) u60 {
-        const hi = std.mem.readIntBig(u48, uuid.bytes[0..6]);
-        const lo = std.mem.readIntBig(u16, uuid.bytes[6..8]) & 0xFFF;
+        const hi = std.mem.readInt(u48, uuid.bytes[0..6], .big);
+        const lo = std.mem.readInt(u16, uuid.bytes[6..8], .big) & 0xFFF;
         return @as(u60, hi) << 12 | @as(u60, lo);
     }
 
     fn setTimestamp(uuid: *Uuid, timestamp: u60) void {
         const timestamp_u48: u48 = @truncate(timestamp >> 12);
-        std.mem.writeIntBig(u48, uuid.bytes[0..6], timestamp_u48);
+        std.mem.writeInt(u48, uuid.bytes[0..6], timestamp_u48, .big);
         const timestamp_u16: u16 = @truncate(timestamp & 0xFFF);
-        std.mem.writeIntBig(u16, uuid.bytes[6..8], timestamp_u16);
+        std.mem.writeInt(u16, uuid.bytes[6..8], timestamp_u16, .big);
     }
 
     test "V6" {
@@ -525,7 +525,7 @@ pub const V7 = struct {
 
         const millis: u64 = @bitCast(std.time.milliTimestamp());
         const millis_u48: u48 = @truncate(millis);
-        std.mem.writeIntBig(u48, uuid.bytes[0..6], millis_u48);
+        std.mem.writeInt(u48, uuid.bytes[0..6], millis_u48, .big);
         RANDOM.bytes(uuid.bytes[6..]);
 
         uuid.setVariant(.rfc4122);
