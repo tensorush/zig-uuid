@@ -14,7 +14,7 @@ pub fn build(b: *std.Build) void {
         .root_source_file = root_source_file,
         .target = b.standardTargetOptions(.{}),
         .optimize = b.standardOptimizeOption(.{}),
-        .version = .{ .major = 1, .minor = 2, .patch = 0 },
+        .version = .{ .major = 1, .minor = 2, .patch = 1 },
     });
 
     const lib_install = b.addInstallArtifact(lib, .{});
