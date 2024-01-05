@@ -1,10 +1,12 @@
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-    const root_source_file = std.Build.FileSource.relative("src/Uuid.zig");
+    const root_source_file = std.Build.LazyPath.relative("src/Uuid.zig");
+    const optimize = b.standardOptimizeOption(.{});
+    const target = b.standardTargetOptions(.{});
 
     // Module
-    _ = b.addModule("Uuid", .{ .source_file = root_source_file });
+    _ = b.addModule("Uuid", .{ .root_source_file = root_source_file });
 
     // Library
     const lib_step = b.step("lib", "Install library");
@@ -12,9 +14,9 @@ pub fn build(b: *std.Build) void {
     const lib = b.addStaticLibrary(.{
         .name = "uuid",
         .root_source_file = root_source_file,
-        .target = b.standardTargetOptions(.{}),
-        .optimize = b.standardOptimizeOption(.{}),
-        .version = .{ .major = 1, .minor = 2, .patch = 1 },
+        .target = target,
+        .optimize = optimize,
+        .version = .{ .major = 1, .minor = 2, .patch = 2 },
     });
 
     const lib_install = b.addInstallArtifact(lib, .{});
@@ -38,7 +40,8 @@ pub fn build(b: *std.Build) void {
 
     const bench = b.addExecutable(.{
         .name = "uuid_bench",
-        .root_source_file = std.Build.FileSource.relative("src/bench.zig"),
+        .root_source_file = std.Build.LazyPath.relative("src/bench.zig"),
+        .target = target,
         .optimize = .ReleaseFast,
     });
 
