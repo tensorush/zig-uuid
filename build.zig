@@ -23,37 +23,37 @@ pub fn build(b: *std.Build) void {
     lib_step.dependOn(&lib_install.step);
     b.default_step.dependOn(lib_step);
 
-    // Docs
-    const docs_step = b.step("doc", "Emit docs");
+    // Documentation
+    const docs_step = b.step("doc", "Emit documentation");
 
     const docs_install = b.addInstallDirectory(.{
         .install_dir = .prefix,
-        .install_subdir = "docs",
+        .install_subdir = "doc",
         .source_dir = lib.getEmittedDocs(),
     });
 
     docs_step.dependOn(&docs_install.step);
     b.default_step.dependOn(docs_step);
 
-    // Benchmarks
-    const bench_step = b.step("bench", "Run benchmarks");
+    // Benchmark suite
+    const benchs_step = b.step("bench", "Run benchmark suite");
 
-    const bench = b.addExecutable(.{
+    const benchs = b.addExecutable(.{
         .target = target,
-        .name = "uuid_bench",
+        .name = "uuid_benchs",
         .optimize = .ReleaseFast,
         .root_source_file = std.Build.LazyPath.relative("src/bench.zig"),
     });
 
-    const bench_run = b.addRunArtifact(bench);
+    const benchs_run = b.addRunArtifact(benchs);
     if (b.args) |args| {
-        bench_run.addArgs(args);
+        benchs_run.addArgs(args);
     }
-    bench_step.dependOn(&bench_run.step);
-    b.default_step.dependOn(bench_step);
+    benchs_step.dependOn(&benchs_run.step);
+    b.default_step.dependOn(benchs_step);
 
-    // Tests
-    const tests_step = b.step("test", "Run tests");
+    // Test suite
+    const tests_step = b.step("test", "Run test suite");
 
     const tests = b.addTest(.{
         .root_source_file = root_source_file,
@@ -63,8 +63,8 @@ pub fn build(b: *std.Build) void {
     tests_step.dependOn(&tests_run.step);
     b.default_step.dependOn(tests_step);
 
-    // Coverage
-    const cov_step = b.step("cov", "Generate code coverage report");
+    // Code coverage
+    const cov_step = b.step("cov", "Generate code coverage");
 
     const cov_run = b.addSystemCommand(&.{ "kcov", "--clean", "--include-pattern=src/", "kcov-output" });
     cov_run.addArtifactArg(tests);
@@ -72,14 +72,14 @@ pub fn build(b: *std.Build) void {
     cov_step.dependOn(&cov_run.step);
     b.default_step.dependOn(cov_step);
 
-    // Lints
-    const lints_step = b.step("lint", "Run lints");
+    // Formatting checks
+    const fmt_step = b.step("fmt", "Run formatting checks");
 
-    const lints = b.addFmt(.{
+    const fmt = b.addFmt(.{
         .paths = &.{ "src/", "build.zig" },
         .check = true,
     });
 
-    lints_step.dependOn(&lints.step);
-    b.default_step.dependOn(lints_step);
+    fmt_step.dependOn(&fmt.step);
+    b.default_step.dependOn(fmt_step);
 }
