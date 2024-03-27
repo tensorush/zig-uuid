@@ -1,9 +1,9 @@
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-    const root_source_file = std.Build.LazyPath.relative("src/Uuid.zig");
-    const optimize = b.standardOptimizeOption(.{});
     const target = b.standardTargetOptions(.{});
+    const optimize = b.standardOptimizeOption(.{});
+    const root_source_file = std.Build.LazyPath.relative("src/Uuid.zig");
 
     // Module
     _ = b.addModule("Uuid", .{ .root_source_file = root_source_file });
@@ -13,10 +13,10 @@ pub fn build(b: *std.Build) void {
 
     const lib = b.addStaticLibrary(.{
         .name = "uuid",
-        .root_source_file = root_source_file,
         .target = target,
         .optimize = optimize,
-        .version = .{ .major = 1, .minor = 2, .patch = 2 },
+        .root_source_file = root_source_file,
+        .version = .{ .major = 1, .minor = 2, .patch = 3 },
     });
 
     const lib_install = b.addInstallArtifact(lib, .{});
@@ -24,32 +24,31 @@ pub fn build(b: *std.Build) void {
     b.default_step.dependOn(lib_step);
 
     // Docs
-    const docs_step = b.step("docs", "Emit docs");
+    const docs_step = b.step("doc", "Emit docs");
 
     const docs_install = b.addInstallDirectory(.{
-        .source_dir = lib.getEmittedDocs(),
         .install_dir = .prefix,
         .install_subdir = "docs",
+        .source_dir = lib.getEmittedDocs(),
     });
 
     docs_step.dependOn(&docs_install.step);
     b.default_step.dependOn(docs_step);
 
-    // Benchmark
+    // Benchmarks
     const bench_step = b.step("bench", "Run benchmarks");
 
     const bench = b.addExecutable(.{
-        .name = "uuid_bench",
-        .root_source_file = std.Build.LazyPath.relative("src/bench.zig"),
         .target = target,
+        .name = "uuid_bench",
         .optimize = .ReleaseFast,
+        .root_source_file = std.Build.LazyPath.relative("src/bench.zig"),
     });
 
     const bench_run = b.addRunArtifact(bench);
     if (b.args) |args| {
         bench_run.addArgs(args);
     }
-
     bench_step.dependOn(&bench_run.step);
     b.default_step.dependOn(bench_step);
 
@@ -64,7 +63,7 @@ pub fn build(b: *std.Build) void {
     tests_step.dependOn(&tests_run.step);
     b.default_step.dependOn(tests_step);
 
-    // Code coverage report
+    // Coverage
     const cov_step = b.step("cov", "Generate code coverage report");
 
     const cov_run = b.addSystemCommand(&.{ "kcov", "--clean", "--include-pattern=src/", "kcov-output" });
@@ -77,7 +76,7 @@ pub fn build(b: *std.Build) void {
     const lints_step = b.step("lint", "Run lints");
 
     const lints = b.addFmt(.{
-        .paths = &.{ "src", "build.zig" },
+        .paths = &.{ "src/", "build.zig" },
         .check = true,
     });
 
