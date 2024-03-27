@@ -14,8 +14,6 @@ const HELP =
     \\
 ;
 
-const Error = std.mem.Allocator.Error || std.time.Timer.Error || std.process.ArgIterator.InitError || std.fmt.ParseIntError || std.os.WriteError;
-
 const V = union(enum) {
     v1: Uuid.V1,
     v2: Uuid.V2,
@@ -38,7 +36,7 @@ const V = union(enum) {
     }
 };
 
-pub fn main() Error!void {
+pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
 
     var buf: [1024]u8 = undefined;
@@ -55,21 +53,18 @@ pub fn main() Error!void {
             i += 1;
             if (i == args.len) {
                 std.debug.print(HELP, .{});
-                std.os.exit(1);
             }
             domain_name = args[i];
         } else if (std.mem.eql(u8, args[i], "-v")) {
             i += 1;
             if (i == args.len) {
                 std.debug.print(HELP, .{});
-                std.os.exit(1);
             }
             ver = try std.fmt.parseUnsigned(u3, args[i], 10);
         } else if (std.mem.eql(u8, args[i], "-i")) {
             i += 1;
             if (i == args.len) {
                 std.debug.print(HELP, .{});
-                std.os.exit(1);
             }
             num_iters = try std.fmt.parseUnsigned(usize, args[i], 10);
         } else if (std.mem.eql(u8, args[i], "-h")) {
@@ -77,7 +72,6 @@ pub fn main() Error!void {
             return {};
         } else {
             std.debug.print(HELP, .{});
-            std.os.exit(1);
         }
     }
 
